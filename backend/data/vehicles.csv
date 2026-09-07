@@ -1,0 +1,11 @@
+vehicle_id,driver_id,weight_capacity_kg,volume_capacity_m3,working_hours,start_depot,end_depot,availability
+V01,DRIVER01,500.0,10.0,8.0,DEPOT,DEPOT,Available
+V02,DRIVER02,500.0,10.0,8.0,DEPOT,DEPOT,Available
+V03,DRIVER03,500.0,10.0,8.0,DEPOT,DEPOT,Available
+V04,DRIVER04,500.0,10.0,8.0,DEPOT,DEPOT,Available
+V05,DRIVER05,500.0,10.0,8.0,DEPOT,DEPOT,Available
+V06,DRIVER06,500.0,10.0,8.0,DEPOT,DEPOT,Available
+V07,DRIVER07,500.0,10.0,8.0,DEPOT,DEPOT,Available
+V08,DRIVER08,500.0,10.0,8.0,DEPOT,DEPOT,Available
+V09,DRIVER09,500.0,10.0,8.0,DEPOT,DEPOT,Available
+V10,DRIVER10,500.0,10.0,8.0,DEPOT,DEPOT,Available
