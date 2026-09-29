@@ -1,0 +1,16 @@
+import urllib.request, json
+req = urllib.request.Request('http://127.0.0.1:8000/api/run-combined', data=json.dumps({'disruption_scenario': 'Urgent Return Request'}).encode(), headers={'Content-Type': 'application/json'})
+res = urllib.request.urlopen(req)
+data = json.loads(res.read())
+print(f"Scenario: Urgent Return Request")
+print(f"Returns: {data['summary']['total_returns']}")
+print(f"Unassigned: {data['summary']['unassigned_returns_count']}")
+print(f"KM: {data['summary']['combined_incremental_km']}")
+
+req2 = urllib.request.Request('http://127.0.0.1:8000/api/run-combined', data=json.dumps({}).encode(), headers={'Content-Type': 'application/json'})
+res2 = urllib.request.urlopen(req2)
+data2 = json.loads(res2.read())
+print(f"\nScenario: Normal")
+print(f"Returns: {data2['summary']['total_returns']}")
+print(f"Unassigned: {data2['summary']['unassigned_returns_count']}")
+print(f"KM: {data2['summary']['combined_incremental_km']}")

@@ -4,6 +4,7 @@ import {
   fetchDatasetSummary,
   runBaselineApi,
   runCombinedPlannerApi,
+  submitOverrideApi
 } from './services/api';
 
 import { Navbar } from './components/Navbar';
@@ -12,7 +13,7 @@ import { RoutePlannerPage } from './pages/RoutePlannerPage';
 import { ReturnRequestsPage } from './pages/ReturnRequestsPage';
 import { BenchmarkPage } from './pages/BenchmarkPage';
 
-import { CheckCircle2, Play, Zap, RefreshCw } from 'lucide-react';
+import { CheckCircle2 } from 'lucide-react';
 
 export function App() {
   const [activeTab, setActiveTab] = useState<'dashboard' | 'planner' | 'returns' | 'benchmark'>('dashboard');
@@ -23,12 +24,16 @@ export function App() {
   const [loading, setLoading] = useState<boolean>(false);
 
   const [combinedData, setCombinedData] = useState<CombinedPlanResponse | null>(null);
+  const [datasetSummary, setDatasetSummary] = useState<any>(null);
   const [notification, setNotification] = useState<string | null>(null);
 
   // Auto load dataset on mount
   useEffect(() => {
     handleLoadData();
   }, []);
+
+  const [optimizationMode, setOptimizationMode] = useState<'distance' | 'workload' | 'balanced'>('distance');
+  const [disruptionScenario, setDisruptionScenario] = useState<string>('');
 
   const showToast = (msg: string) => {
     setNotification(msg);
@@ -39,8 +44,9 @@ export function App() {
     setLoading(true);
     try {
       const summary = await fetchDatasetSummary();
+      setDatasetSummary(summary);
       setDatasetLoaded(true);
-      showToast(`Dataset loaded: 200 Deliveries, 30 Returns, 10 Vehicles`);
+      showToast(`Dataset loaded: ${summary.deliveries_count || 200} Deliveries, ${summary.returns_count || 30} Returns, ${summary.vehicles_count || 10} Vehicles`);
     } catch (err) {
       showToast('Error loading dataset');
     } finally {
@@ -66,13 +72,33 @@ export function App() {
   const handleRunPlanner = async () => {
     setLoading(true);
     try {
-      const res = await runCombinedPlannerApi();
+      const objective_weights = {
+        distance: { alpha_km: 1.0, beta_workload: 0.0 },
+        workload: { alpha_km: 0.0, beta_workload: 1.0 },
+        balanced: { alpha_km: 0.5, beta_workload: 0.5 }
+      }[optimizationMode];
+      
+      const config = { objective_weights, disruption_scenario: disruptionScenario || undefined };
+      const res = await runCombinedPlannerApi(config);
       setCombinedData(res);
       setBaselineRun(true);
       setPlannerRun(true);
       showToast(`Optimization complete: Saved ${res.summary.km_saved} km (${res.summary.percentage_improvement}% improvement)`);
     } catch (err) {
       showToast('Error executing combined planner optimization');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleOverride = async (return_id: string, route_id: string, reason: string, user_id: string) => {
+    try {
+      setLoading(true);
+      await submitOverrideApi({ return_id, route_id, reason, user_id });
+      showToast(`Override applied for return ${return_id} to route ${route_id}`);
+      await handleRunPlanner(); // Re-run planner to apply override
+    } catch (err) {
+      showToast('Error applying override');
     } finally {
       setLoading(false);
     }
@@ -91,6 +117,8 @@ export function App() {
         onLoadData={handleLoadData}
         onRunBaseline={handleRunBaseline}
         onRunPlanner={handleRunPlanner}
+        optimizationMode={optimizationMode}
+        setOptimizationMode={setOptimizationMode}
       />
 
       {/* Notification Toast */}
@@ -116,7 +144,15 @@ export function App() {
               </span>
               <span className="text-slate-600">→</span>
               <span className={`px-2.5 py-0.5 rounded-full font-bold ${plannerRun ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'bg-slate-800 text-slate-400'}`}>
-                3. Combined Optimization Done
+                3. Optimization
+              </span>
+              <span className="text-slate-600">→</span>
+              <span className={`px-2.5 py-0.5 rounded-full font-bold ${plannerRun ? 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/30' : 'bg-slate-800 text-slate-400'}`}>
+                4. Validation
+              </span>
+              <span className="text-slate-600">→</span>
+              <span className={`px-2.5 py-0.5 rounded-full font-bold ${plannerRun ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30' : 'bg-slate-800 text-slate-400'}`}>
+                5. Final Results
               </span>
             </div>
           </div>
@@ -130,13 +166,16 @@ export function App() {
       {/* Main Content Area */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {activeTab === 'dashboard' && (
-          <DashboardPage
-            data={combinedData}
-            baselineRun={baselineRun}
-            plannerRun={plannerRun}
-            onRunPlanner={handleRunPlanner}
-            onRunBaseline={handleRunBaseline}
-            onLoadData={handleLoadData}
+          <DashboardPage 
+            data={combinedData} 
+            baselineRun={baselineRun} 
+            plannerRun={plannerRun} 
+            onRunPlanner={handleRunPlanner} 
+            onRunBaseline={handleRunBaseline} 
+            onLoadData={handleLoadData} 
+            disruptionScenario={disruptionScenario}
+            setDisruptionScenario={setDisruptionScenario}
+            datasetSummary={datasetSummary}
           />
         )}
 
@@ -145,7 +184,7 @@ export function App() {
         )}
 
         {activeTab === 'returns' && (
-          <ReturnRequestsPage data={combinedData} />
+          <ReturnRequestsPage data={combinedData} onOverride={handleOverride} />
         )}
 
         {activeTab === 'benchmark' && (
@@ -160,7 +199,7 @@ export function App() {
             <span className="font-bold text-slate-700">SMARTROUTE RETURNS</span> — Combined Forward Delivery & Return Pickup Planner
           </div>
           <div>
-            Academic Capstone Prototype — <span className="font-semibold text-emerald-700">Review 1 (~35% Completion)</span>
+            Academic Capstone Prototype — <span className="font-semibold text-emerald-700">FINAL REVIEW — 100% COMPLETE</span>
           </div>
         </div>
       </footer>

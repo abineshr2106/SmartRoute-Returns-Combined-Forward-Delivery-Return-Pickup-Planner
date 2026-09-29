@@ -1,14 +1,22 @@
 import React, { useState, useMemo } from 'react';
 import { CombinedPlanResponse, ReturnItem } from '../types';
+import { fetchAuditLogApi } from '../services/api';
 import { ReturnDetailModal } from '../components/ReturnDetailModal';
-import { RotateCcw, Search, Filter, AlertTriangle, CheckCircle2, Info, Eye } from 'lucide-react';
+import { RotateCcw, Search, Filter, AlertTriangle, CheckCircle2, Info, Eye, ShieldAlert, X } from 'lucide-react';
 
 interface ReturnRequestsPageProps {
   data: CombinedPlanResponse | null;
+  onOverride?: (return_id: string, route_id: string, reason: string, user_id: string) => void;
 }
 
-export const ReturnRequestsPage: React.FC<ReturnRequestsPageProps> = ({ data }) => {
+export const ReturnRequestsPage: React.FC<ReturnRequestsPageProps> = ({ data, onOverride }) => {
   const [filterType, setFilterType] = useState<string>('ALL');
+  const [overrideModal, setOverrideModal] = useState<{ isOpen: boolean; returnId: string }>({ isOpen: false, returnId: '' });
+  const [auditModalOpen, setAuditModalOpen] = useState<boolean>(false);
+  const [auditLogs, setAuditLogs] = useState<any[]>([]);
+  const [overrideRoute, setOverrideRoute] = useState<string>('');
+  const [overrideReason, setOverrideReason] = useState<string>('');
+  const [overrideUserId, setOverrideUserId] = useState<string>('DISPATCHER-001');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedReturn, setSelectedReturn] = useState<ReturnItem | null>(null);
 
@@ -50,16 +58,32 @@ export const ReturnRequestsPage: React.FC<ReturnRequestsPageProps> = ({ data }) 
           </p>
         </div>
 
-        {/* Search bar */}
-        <div className="relative w-full md:w-72">
-          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-          <input
-            type="text"
-            placeholder="Search return ID, item, customer..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500"
-          />
+        {/* Search bar and actions */}
+        <div className="flex items-center gap-3 w-full md:w-auto">
+          <button
+            onClick={async () => {
+              setAuditModalOpen(true);
+              try {
+                const res = await fetchAuditLogApi();
+                setAuditLogs(res.audit_log || []);
+              } catch(e) {}
+            }}
+            className="px-4 py-2 bg-slate-100 hover:bg-slate-200 border border-slate-300 text-slate-700 text-xs font-semibold rounded-xl flex items-center gap-1.5 transition-colors"
+          >
+            <ShieldAlert className="w-4 h-4 text-slate-500" />
+            <span>Audit Log</span>
+          </button>
+          
+          <div className="relative w-full md:w-64">
+            <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+            <input
+              type="text"
+              placeholder="Search return ID, item..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500"
+            />
+          </div>
         </div>
       </div>
 
@@ -163,12 +187,23 @@ export const ReturnRequestsPage: React.FC<ReturnRequestsPageProps> = ({ data }) 
                         )}
                       </td>
                       <td className="py-3 px-4 text-right">
-                        <button
-                          onClick={() => setSelectedReturn(ret)}
-                          className="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg font-semibold text-[11px] transition-colors border border-slate-300 inline-flex items-center gap-1"
-                        >
-                          <Eye className="w-3 h-3" /> Details
-                        </button>
+                        <div className="flex justify-end gap-2">
+                          {isBlocked && (
+                            <button
+                              onClick={() => setOverrideModal({ isOpen: true, returnId: ret.return_id })}
+                              className="px-2.5 py-1 bg-rose-100 hover:bg-rose-200 text-rose-700 rounded-lg font-bold text-[11px] transition-colors border border-rose-300 inline-flex items-center gap-1"
+                              title="Authorized Override"
+                            >
+                              <ShieldAlert className="w-3 h-3" /> Override
+                            </button>
+                          )}
+                          <button
+                            onClick={() => setSelectedReturn(ret)}
+                            className="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg font-semibold text-[11px] transition-colors border border-slate-300 inline-flex items-center gap-1"
+                          >
+                            <Eye className="w-3 h-3" /> Details
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   );
@@ -181,6 +216,154 @@ export const ReturnRequestsPage: React.FC<ReturnRequestsPageProps> = ({ data }) 
 
       {/* Return Detail Modal */}
       <ReturnDetailModal returnItem={selectedReturn} onClose={() => setSelectedReturn(null)} />
+      {/* Override Modal */}
+      {overrideModal.isOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden">
+            <div className="bg-rose-500 px-5 py-4 flex justify-between items-center">
+              <h3 className="text-white font-bold flex items-center gap-2">
+                <ShieldAlert className="w-5 h-5" /> Authorized Dispatch Override
+              </h3>
+              <button 
+                onClick={() => setOverrideModal({ isOpen: false, returnId: '' })}
+                className="text-white/80 hover:text-white transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
+            <div className="p-5 space-y-4">
+              <div className="text-xs text-rose-700 bg-rose-50 p-3 rounded-lg border border-rose-200 font-medium">
+                You are about to force assignment of <span className="font-bold">{overrideModal.returnId}</span> to a route. <br/><br/>
+                <span className="font-bold uppercase">Warning:</span> Override bypasses normal planning restrictions and should be used only by authorized personnel.
+              </div>
+              
+              <div className="space-y-3 text-sm">
+                <div>
+                  <label className="block text-slate-700 font-semibold mb-1">Target Route ID</label>
+                  <select 
+                    className="w-full bg-white border border-slate-300 rounded-lg p-2 focus:ring-rose-500 focus:border-rose-500"
+                    value={overrideRoute}
+                    onChange={(e) => setOverrideRoute(e.target.value)}
+                  >
+                    <option value="">-- Select Route --</option>
+                    {data?.routes.map(r => (
+                      <option key={r.route_id} value={r.route_id}>Route {r.route_id} (Vehicle {r.vehicle_id})</option>
+                    ))}
+                  </select>
+                </div>
+                
+                <div>
+                  <label className="block text-slate-700 font-semibold mb-1">Reason for Override</label>
+                  <input 
+                    type="text" 
+                    className="w-full bg-white border border-slate-300 rounded-lg p-2 focus:ring-rose-500 focus:border-rose-500"
+                    placeholder="e.g., VIP Customer, Manager Approved"
+                    value={overrideReason}
+                    onChange={(e) => setOverrideReason(e.target.value)}
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-slate-700 font-semibold mb-1">Dispatcher ID</label>
+                  <input 
+                    type="text" 
+                    className="w-full bg-white border border-slate-300 rounded-lg p-2 focus:ring-rose-500 focus:border-rose-500"
+                    value={overrideUserId}
+                    onChange={(e) => setOverrideUserId(e.target.value)}
+                  />
+                </div>
+              </div>
+            </div>
+            
+            <div className="bg-slate-50 px-5 py-4 border-t border-slate-100 flex justify-end gap-3">
+              <button
+                onClick={() => setOverrideModal({ isOpen: false, returnId: '' })}
+                className="px-4 py-2 bg-white border border-slate-300 text-slate-700 rounded-lg font-semibold hover:bg-slate-50 transition-colors text-sm"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  if (overrideRoute && overrideReason && overrideUserId && onOverride) {
+                    onOverride(overrideModal.returnId, overrideRoute, overrideReason, overrideUserId);
+                    setOverrideModal({ isOpen: false, returnId: '' });
+                    setOverrideRoute('');
+                    setOverrideReason('');
+                  }
+                }}
+                disabled={!overrideRoute || !overrideReason || !overrideUserId}
+                className="px-4 py-2 bg-rose-600 text-white rounded-lg font-semibold hover:bg-rose-700 transition-colors disabled:opacity-50 text-sm flex items-center gap-2"
+              >
+                <ShieldAlert className="w-4 h-4" /> Execute Override
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* Audit Log Modal */}
+      {auditModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[80vh]">
+            <div className="bg-slate-800 px-5 py-4 flex justify-between items-center shrink-0">
+              <h3 className="text-white font-bold flex items-center gap-2">
+                <ShieldAlert className="w-5 h-5 text-emerald-400" /> Authorized Override Audit Log
+              </h3>
+              <button 
+                onClick={() => setAuditModalOpen(false)}
+                className="text-white/80 hover:text-white transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
+            <div className="p-0 overflow-y-auto grow">
+              <table className="w-full text-left border-collapse text-xs">
+                <thead className="bg-slate-50 text-slate-600 font-semibold uppercase sticky top-0 border-b border-slate-200">
+                  <tr>
+                    <th className="py-2.5 px-4">Timestamp</th>
+                    <th className="py-2.5 px-4">User ID</th>
+                    <th className="py-2.5 px-4">Action</th>
+                    <th className="py-2.5 px-4">Return ID</th>
+                    <th className="py-2.5 px-4">Route ID</th>
+                    <th className="py-2.5 px-4">Reason</th>
+                    <th className="py-2.5 px-4">Prev Status</th>
+                    <th className="py-2.5 px-4">New Status</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {auditLogs.length === 0 ? (
+                    <tr>
+                      <td colSpan={8} className="py-8 text-center text-slate-500">
+                        No authorization overrides have been executed.
+                      </td>
+                    </tr>
+                  ) : (
+                    auditLogs.map((log, idx) => (
+                      <tr key={idx} className="hover:bg-slate-50">
+                        <td className="py-2.5 px-4 font-mono text-slate-500 whitespace-nowrap">
+                          {new Date(log.timestamp).toLocaleString()}
+                        </td>
+                        <td className="py-2.5 px-4 font-semibold text-slate-800">{log.user_id}</td>
+                        <td className="py-2.5 px-4">
+                          <span className="px-2 py-0.5 bg-rose-100 text-rose-800 rounded font-bold text-[10px]">
+                            {log.action}
+                          </span>
+                        </td>
+                        <td className="py-2.5 px-4 font-mono text-sky-700 font-bold">{log.return_id}</td>
+                        <td className="py-2.5 px-4 font-mono text-indigo-700 font-bold">{log.route_id}</td>
+                        <td className="py-2.5 px-4 text-slate-600 truncate max-w-[150px]" title={log.reason}>{log.reason}</td>
+                        <td className="py-2.5 px-4 text-slate-500 line-through">{log.previous_status}</td>
+                        <td className="py-2.5 px-4 font-bold text-amber-600">{log.new_status}</td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

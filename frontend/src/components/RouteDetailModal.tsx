@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { RouteDetail } from '../types';
-import { Truck, Clock, Weight, Box, AlertTriangle, CheckCircle, MapPin, X } from 'lucide-react';
+import { Truck, Clock, Weight, Box, AlertTriangle, CheckCircle, MapPin, X, Users } from 'lucide-react';
 
 interface RouteDetailModalProps {
   route: RouteDetail | null;
@@ -8,6 +8,13 @@ interface RouteDetailModalProps {
 }
 
 export const RouteDetailModal: React.FC<RouteDetailModalProps> = ({ route, onClose }) => {
+  useEffect(() => {
+    if (route) {
+      document.body.style.overflow = 'hidden';
+      return () => { document.body.style.overflow = 'unset'; };
+    }
+  }, [route]);
+
   if (!route) return null;
 
   return (
@@ -80,11 +87,52 @@ export const RouteDetailModal: React.FC<RouteDetailModalProps> = ({ route, onClo
             </div>
           </div>
 
+          {/* Workload Analysis Grid */}
+          <div>
+            <h4 className="text-sm font-bold text-slate-900 mb-3 flex items-center gap-2">
+              <Users className="w-4 h-4 text-amber-600" />
+              Worker Protection & Workload Analysis
+            </h4>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              <div className="bg-amber-50 p-3 rounded-xl border border-amber-200">
+                <span className="text-xs font-medium text-amber-700 block">Total Stops</span>
+                <p className="text-lg font-bold text-amber-900 mt-0.5">{route.stops?.length || 0}</p>
+                <span className="text-[10px] text-amber-600 block">Max allowed: 25</span>
+              </div>
+              <div className="bg-amber-50 p-3 rounded-xl border border-amber-200">
+                <span className="text-xs font-medium text-amber-700 block">Est. Shift Hours</span>
+                <p className="text-lg font-bold text-amber-900 mt-0.5">{route.total_duration_hours?.toFixed(1) || '0.0'} hrs</p>
+                <span className="text-[10px] text-amber-600 block">Max allowed: {route.working_hours?.toFixed(1) || '0.0'} hrs</span>
+              </div>
+              <div className="bg-amber-50 p-3 rounded-xl border border-amber-200">
+                <span className="text-xs font-medium text-amber-700 block">Driving vs Service</span>
+                <p className="text-lg font-bold text-amber-900 mt-0.5">
+                  {(() => {
+                    const svcHrs = (route.stops || []).reduce((acc, s) => acc + ((s.service_time_minutes || 10) / 60), 0);
+                    const drvHrs = Math.max(0, (route.total_duration_hours || 0) - svcHrs);
+                    return `${drvHrs.toFixed(1)} / ${svcHrs.toFixed(1)}`;
+                  })()}
+                </p>
+                <span className="text-[10px] text-amber-600 block">Hours</span>
+              </div>
+              <div className="bg-amber-50 p-3 rounded-xl border border-amber-200 flex flex-col justify-center">
+                <span className="text-xs font-medium text-amber-700 block">Status</span>
+                <span className={`inline-block w-max mt-1 px-2.5 py-0.5 rounded text-xs font-bold ${
+                  route.workload_status === 'Normal' ? 'bg-emerald-200 text-emerald-800' :
+                  route.workload_status === 'Elevated' ? 'bg-amber-300 text-amber-900' :
+                  'bg-rose-500 text-white'
+                }`}>
+                  {route.workload_status}
+                </span>
+              </div>
+            </div>
+          </div>
+
           {/* Sequence Table */}
           <div>
             <h4 className="text-sm font-bold text-slate-900 mb-3 flex items-center gap-2">
               <Clock className="w-4 h-4 text-sky-600" />
-              Route Sequence Timeline ({route.stops.length} Stops)
+              Route Sequence Timeline ({route.stops?.length || 0} Stops)
             </h4>
 
             <div className="border border-slate-200 rounded-xl overflow-hidden shadow-sm max-h-72 overflow-y-auto">
@@ -101,7 +149,7 @@ export const RouteDetailModal: React.FC<RouteDetailModalProps> = ({ route, onClo
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-200 bg-white">
-                  {route.stops.map((stop) => {
+                  {(route.stops || []).map((stop) => {
                     const isReturn = stop.stop_type === 'RETURN';
                     return (
                       <tr key={stop.stop_id} className={`hover:bg-slate-50/80 ${isReturn ? 'bg-emerald-50/40' : ''}`}>

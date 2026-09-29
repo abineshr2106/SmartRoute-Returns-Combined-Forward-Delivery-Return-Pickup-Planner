@@ -11,6 +11,8 @@ interface NavbarProps {
   onLoadData: () => void;
   onRunBaseline: () => void;
   onRunPlanner: () => void;
+  optimizationMode: 'distance' | 'workload' | 'balanced';
+  setOptimizationMode: (mode: 'distance' | 'workload' | 'balanced') => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -23,6 +25,8 @@ export const Navbar: React.FC<NavbarProps> = ({
   onLoadData,
   onRunBaseline,
   onRunPlanner,
+  optimizationMode,
+  setOptimizationMode,
 }) => {
   return (
     <header className="bg-slate-900 text-white border-b border-slate-800 sticky top-0 z-40 shadow-lg">
@@ -39,8 +43,8 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <span className="bg-sky-500/20 text-sky-400 text-xs font-semibold px-2 py-0.5 rounded border border-sky-500/30 uppercase tracking-wide">
                   RETURNS
                 </span>
-                <span className="bg-emerald-500/20 text-emerald-300 text-xs font-medium px-2 py-0.5 rounded border border-emerald-500/30">
-                  Review 1 (~35%)
+                <span className="invisible text-xs font-medium px-2 py-0.5 rounded border border-transparent">
+                  Final Review | 100% Complete
                 </span>
               </div>
               <p className="text-xs text-slate-400 font-normal">
@@ -114,14 +118,26 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <span>RUN BASELINE</span>
               </button>
             ) : (
-              <button
-                onClick={onRunPlanner}
-                disabled={loading}
-                className="flex items-center space-x-1.5 px-3.5 py-2 bg-gradient-to-r from-sky-600 to-indigo-600 hover:from-sky-500 hover:to-indigo-500 text-white text-xs font-semibold rounded-lg shadow-md shadow-sky-500/20 transition-all"
-              >
-                <Zap className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
-                <span>RUN COMBINED PLANNER</span>
-              </button>
+              <>
+                <select
+                  value={optimizationMode}
+                  onChange={(e) => setOptimizationMode(e.target.value as 'distance' | 'workload' | 'balanced')}
+                  className="bg-slate-800 border border-slate-700 text-white text-xs rounded-lg focus:ring-sky-500 focus:border-sky-500 block p-2 transition-all cursor-pointer"
+                  title="Distance weight (Alpha) + Workload weight (Beta) = 1.0"
+                >
+                  <option value="distance">Distance Priority (α=1.0, β=0.0)</option>
+                  <option value="balanced">Balanced Priority (α=0.5, β=0.5)</option>
+                  <option value="workload">Workload Priority (α=0.0, β=1.0)</option>
+                </select>
+                <button
+                  onClick={onRunPlanner}
+                  disabled={loading}
+                  className="flex items-center space-x-1.5 px-3.5 py-2 bg-gradient-to-r from-sky-600 to-indigo-600 hover:from-sky-500 hover:to-indigo-500 text-white text-xs font-semibold rounded-lg shadow-md shadow-sky-500/20 transition-all"
+                >
+                  <Zap className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
+                  <span>RUN COMBINED PLANNER</span>
+                </button>
+              </>
             )}
           </div>
         </div>

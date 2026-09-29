@@ -68,7 +68,10 @@ def check_time_windows(stops: List[Dict]) -> Tuple[bool, List[Dict]]:
 def run_combined_optimization(
     deliveries: List[Dict],
     returns: List[Dict],
-    vehicles: List[Dict]
+    vehicles: List[Dict],
+    workload_config: Optional[Dict] = None,
+    objective_weights: Optional[Dict] = None,
+    manual_overrides: Optional[Dict] = None
 ) -> Tuple[List[Dict], List[Dict], Dict]:
     """
     Combined Forward Delivery + Return Pickup Planner
@@ -128,6 +131,13 @@ def run_combined_optimization(
     
     processed_returns = []
     
+    if workload_config is None:
+        workload_config = {"max_stops": 25, "normal_threshold_pct": 80.0, "elevated_threshold_pct": 95.0}
+    max_stops = int(workload_config.get("max_stops", 25))
+    
+    alpha = objective_weights.get("alpha_km", 1.0) if objective_weights else 1.0
+    beta = objective_weights.get("beta_workload", 0.0) if objective_weights else 0.0
+    
     for ret in sorted_returns:
         ret_copy = copy.deepcopy(ret)
         r_lat = float(ret_copy["latitude"])
@@ -136,12 +146,46 @@ def run_combined_optimization(
         r_volume = get_item_volume(ret_copy["item_size"])
         
         best_candidate = None
+        best_cost = float('inf')
         best_incremental_km = float('inf')
         best_insertion_idx = None
         best_route_id = None
         
         capacity_blocked = False
         time_window_blocked = False
+        
+        # Check for manual override
+        override_req = manual_overrides.get(ret_copy["return_id"]) if manual_overrides else None
+        
+        if override_req:
+            target_route = override_req.route_id if hasattr(override_req, "route_id") else override_req["route_id"]
+            if target_route in active_routes:
+                stops = active_routes[target_route]
+                ret_stop = {
+                    "stop_id": ret_copy["return_id"],
+                    "stop_type": "RETURN",
+                    "customer_id": ret_copy["customer_id"],
+                    "latitude": r_lat,
+                    "longitude": r_lng,
+                    "item_type": ret_copy["item_type"],
+                    "item_size": ret_copy["item_size"],
+                    "item_weight_kg": r_weight,
+                    "item_volume_m3": r_volume,
+                    "pickup_time_start": ret_copy["pickup_time_start"],
+                    "pickup_time_end": ret_copy["pickup_time_end"],
+                    "service_time_minutes": int(ret_copy.get("service_time_minutes", 10)),
+                    "priority": ret_copy.get("priority", "Normal"),
+                    "status": "Override"
+                }
+                # Force append to end
+                active_routes[target_route].append(ret_stop)
+                ret_copy["status"] = "Assigned"
+                ret_copy["assigned_route_id"] = target_route
+                ret_copy["insertion_sequence"] = len(stops)
+                ret_copy["incremental_km"] = 0.0 # Simplify
+                ret_copy["blocked_reason"] = "AUTHORIZED OVERRIDE"
+                processed_returns.append(ret_copy)
+                continue
         
         # Search all active routes for best insertion position
         for r_id, stops in active_routes.items():
@@ -154,6 +198,7 @@ def run_combined_optimization(
                 
             weight_limit = float(veh.get("weight_capacity_kg", 500.0))
             volume_limit = float(veh.get("volume_capacity_m3", 10.0))
+            working_hrs = float(veh.get("working_hours", 8.0))
             
             # 1. Weight capacity check
             current_weight = sum(s["item_weight_kg"] for s in stops)
@@ -181,7 +226,7 @@ def run_combined_optimization(
                 "pickup_time_start": ret_copy["pickup_time_start"],
                 "pickup_time_end": ret_copy["pickup_time_end"],
                 "service_time_minutes": int(ret_copy.get("service_time_minutes", 10)),
-                "priority": ret_copy["priority"],
+                "priority": ret_copy.get("priority", "Normal"),
                 "status": "Feasible"
             }
             
@@ -203,7 +248,28 @@ def run_combined_optimization(
                 
                 incremental = cand_dist - curr_dist
                 
-                if incremental < best_incremental_km:
+                # Calculate workload for candidate
+                cand_travel_mins = travel_time_minutes(cand_dist)
+                cand_service_mins = sum(s.get("service_time_minutes", 10) for s in candidate_stops)
+                cand_duration_hrs = (cand_travel_mins + cand_service_mins) / 60.0
+                cand_workload_pct = (cand_duration_hrs / working_hrs) * 100.0
+                
+                # Normalize metrics (0.0 to 1.0)
+                norm_km = min(incremental / 50.0, 1.0)  # assume 50km is max expected penalty
+                norm_workload = min(cand_workload_pct / 100.0, 2.0) # limit to 2.0 (200%)
+                
+                # Penalties for worker protection
+                penalty = 0.0
+                if len(candidate_stops) > max_stops:
+                    penalty += 10.0 # Huge penalty to strictly avoid exceeding max stops
+                if cand_duration_hrs > working_hrs:
+                    penalty += 10.0 # Huge penalty to strictly avoid exceeding max shift hours
+                    
+                # Calculate weighted objective cost
+                cost = (alpha * norm_km) + (beta * norm_workload) + penalty
+                
+                if cost < best_cost:
+                    best_cost = cost
                     best_incremental_km = incremental
                     best_insertion_idx = idx
                     best_route_id = r_id
@@ -269,9 +335,17 @@ def run_combined_optimization(
         working_hrs = float(veh.get("working_hours", 8.0))
         workload_pct = (duration_hrs / working_hrs) * 100.0
         
-        if workload_pct <= 80.0:
+        # Apply configurable workload thresholds
+        if workload_config is None:
+            workload_config = {"max_stops": 25, "normal_threshold_pct": 80.0, "elevated_threshold_pct": 95.0}
+            
+        norm_thresh = float(workload_config.get("normal_threshold_pct", 80.0))
+        elev_thresh = float(workload_config.get("elevated_threshold_pct", 95.0))
+        max_stops = int(workload_config.get("max_stops", 25))
+        
+        if workload_pct <= norm_thresh:
             workload_status = "Normal"
-        elif workload_pct <= 95.0:
+        elif workload_pct <= elev_thresh:
             workload_status = "Elevated"
         else:
             workload_status = "Risk"
@@ -280,12 +354,19 @@ def run_combined_optimization(
         ret_count = sum(1 for s in evaluated_stops if s["stop_type"] == "RETURN")
         
         has_tw_violation = any(s["status"] == "Time Window Violation" for s in evaluated_stops)
-        route_status = "WARNING" if has_tw_violation else "FEASIBLE"
+        has_stops_violation = (del_count + ret_count) > max_stops
+        has_capacity_violation = (tot_weight > weight_cap) or (tot_volume > volume_cap)
+        has_shift_violation = duration_hrs > working_hrs
         
+        if has_tw_violation or has_stops_violation or has_capacity_violation or has_shift_violation:
+            route_status = "WARNING"
+        else:
+            route_status = "FEASIBLE"
         formatted_routes.append({
             "route_id": r_id,
             "vehicle_id": veh_id,
             "driver_id": veh.get("driver_id", "DRIVER"),
+            "working_hours": working_hrs,
             "deliveries_count": del_count,
             "returns_count": ret_count,
             "original_distance_km": orig_dist,

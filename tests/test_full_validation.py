@@ -1,5 +1,8 @@
 import sys
 import os
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+import os
 import json
 import pytest
 from fastapi.testclient import TestClient
@@ -16,7 +19,7 @@ def test_1_demo_data_loading():
     assert response.status_code == 200
     data = response.json()
     assert data["deliveries_count"] == 200
-    assert data["returns_count"] == 30
+    assert data["returns_count"] == 50
     assert data["vehicles_count"] == 10
 
     deliv_resp = client.get("/api/deliveries")
@@ -25,7 +28,7 @@ def test_1_demo_data_loading():
 
     ret_resp = client.get("/api/returns")
     assert ret_resp.status_code == 200
-    assert len(ret_resp.json()) == 30
+    assert len(ret_resp.json()) == 50
 
     veh_resp = client.get("/api/vehicles")
     assert veh_resp.status_code == 200
@@ -50,7 +53,7 @@ def test_3_combined_route_planning():
     assert "routes" in data
     assert "returns" in data
     assert len(data["routes"]) == 10
-    assert len(data["returns"]) == 30
+    assert len(data["returns"]) == 50
 
 def test_4_vehicle_capacity():
     response = client.post("/api/run-combined")
@@ -96,7 +99,7 @@ def test_9_dashboard_metrics():
     data = response.json()
     summary = data["summary"]
     assert summary["total_deliveries"] == 200
-    assert summary["total_returns"] == 30
+    assert summary["total_returns"] == 50
     assert summary["total_vehicles"] == 10
 
 def test_10_route_visualisation_stops():
@@ -123,7 +126,7 @@ def test_12_benchmark_scenarios():
     assert response.status_code == 200
     data = response.json()
     assert "experiments" in data
-    assert len(data["experiments"]) == 3
+    assert len(data["experiments"]) == 5
 
 def test_13_csv_export():
     r_resp = client.get("/api/export/routes")

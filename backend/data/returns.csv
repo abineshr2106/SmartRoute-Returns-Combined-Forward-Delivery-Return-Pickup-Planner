@@ -1,31 +1,51 @@
 return_id,customer_id,latitude,longitude,item_type,item_size,item_weight_kg,return_type,priority,pickup_time_start,pickup_time_end,service_time_minutes,status
-RET001,C301,13.12064,80.44075,Air Conditioner,Large,15.5,Customer Return,Normal,09:00,17:00,10,Unassigned
-RET002,C302,13.14866,80.41556,Monitor,Medium,2.8,Damaged item,Normal,09:00,17:00,10,Unassigned
-RET003,C303,13.15734,80.36401,Smartphone,Small,0.4,Replacement pickup,High,09:00,17:00,10,Unassigned
-RET004,C304,13.17103,80.36774,Smartphone,Small,0.7,Replacement pickup,Normal,09:00,17:00,10,Unassigned
-RET005,C305,13.15853,80.31704,Washing Machine,Extra Large,27.8,Replacement pickup,Normal,09:00,17:00,10,Unassigned
-RET006,C306,13.25168,80.31823,Microwave,Medium,6.8,Repair collection,Urgent,09:00,17:00,10,Unassigned
-RET007,C307,13.23679,80.28845,Microwave,Medium,6.0,Customer Return,Normal,09:00,17:00,10,Unassigned
-RET008,C308,13.18353,80.26443,Washing Machine,Extra Large,26.8,Replacement pickup,High,09:00,17:00,10,Unassigned
-RET009,C309,13.23757,80.23516,Printer,Medium,4.5,Damaged item,High,09:00,17:00,10,Unassigned
-RET010,C310,13.22633,80.19173,Microwave,Medium,6.7,Repair collection,Normal,09:00,17:00,10,Unassigned
-RET011,C311,13.194,80.1838,Washing Machine,Extra Large,26.7,Customer Return,Urgent,09:00,17:00,10,Unassigned
-RET012,C312,13.14292,80.18016,Smartphone,Small,0.3,Customer Return,Urgent,09:00,17:00,10,Unassigned
-RET013,C313,13.11248,80.19428,Television,Large,9.9,Repair collection,High,09:00,17:00,10,Unassigned
-RET014,C314,13.11464,80.12701,Television,Large,9.3,Replacement pickup,High,09:00,17:00,10,Unassigned
-RET015,C315,13.08538,80.19964,Monitor,Medium,3.3,Repair collection,Normal,09:00,17:00,10,Unassigned
-RET016,C316,13.06172,80.126,Microwave,Medium,7.2,Repair collection,High,09:00,17:00,10,Unassigned
-RET017,C317,13.00584,80.13127,Microwave,Medium,5.7,Customer Return,High,09:00,17:00,10,Unassigned
-RET018,C318,13.02545,80.17065,Microwave,Medium,5.1,Warranty,High,09:00,17:00,10,Unassigned
-RET019,C319,13.04099,80.2351,Washing Machine,Extra Large,23.3,Warranty,High,09:00,17:00,10,Unassigned
-RET020,C320,12.99681,80.21907,Printer,Medium,5.9,Damaged item,Urgent,09:00,17:00,10,Unassigned
-RET021,C321,13.04068,80.2529,Washing Machine,Extra Large,23.1,Warranty,Normal,09:00,17:00,10,Unassigned
-RET022,C322,12.96732,80.24977,Microwave,Medium,5.3,Customer Return,Normal,09:00,17:00,10,Unassigned
-RET023,C323,12.98732,80.28214,Monitor,Medium,4.4,Replacement pickup,Urgent,09:00,17:00,10,Unassigned
-RET024,C324,13.0099,80.30193,Air Conditioner,Large,14.8,Repair collection,Normal,09:00,17:00,10,Unassigned
-RET025,C325,12.9607,80.34672,Monitor,Medium,4.1,Damaged item,Normal,09:00,17:00,10,Unassigned
-RET026,C326,13.03461,80.30937,Laptop,Small,1.2,Replacement pickup,Urgent,09:00,17:00,10,Unassigned
-RET027,C327,13.02493,80.3592,Smartphone,Small,0.4,Damaged item,Urgent,09:00,17:00,10,Unassigned
-RET028,C328,13.04901,80.33332,Microwave,Medium,7.4,Repair collection,Normal,09:00,17:00,10,Unassigned
-RET029,C329,13.05721,80.38534,Refrigerator,Extra Large,480.0,Damaged item,Urgent,09:00,17:00,10,Unassigned
-RET030,C330,13.08763,80.44205,Television,Large,25.0,Warranty,High,08:00,08:15,10,Unassigned
+RET001,C301,13.10665,80.44342,Air Conditioner,Large,15.5,Customer Return,Normal,09:00,17:00,10,Unassigned
+RET002,C302,13.12421,80.42483,Monitor,Medium,2.8,Damaged item,Normal,09:00,17:00,10,Unassigned
+RET003,C303,13.13239,80.38014,Smartphone,Small,0.4,Replacement pickup,High,09:00,17:00,10,Unassigned
+RET004,C304,13.13503,80.39217,Smartphone,Small,0.7,Replacement pickup,Normal,09:00,17:00,10,Unassigned
+RET005,C305,13.13361,80.34469,Washing Machine,Extra Large,27.8,Replacement pickup,Normal,09:00,17:00,10,Unassigned
+RET006,C306,13.20847,80.39592,Microwave,Medium,6.8,Repair collection,Urgent,09:00,17:00,10,Unassigned
+RET007,C307,13.20148,80.37303,Microwave,Medium,6.0,Customer Return,Normal,09:00,17:00,10,Unassigned
+RET008,C308,13.16552,80.33009,Washing Machine,Extra Large,26.8,Replacement pickup,High,09:00,17:00,10,Unassigned
+RET009,C309,13.2193,80.35364,Printer,Medium,4.5,Damaged item,High,09:00,17:00,10,Unassigned
+RET010,C310,13.23597,80.32744,Microwave,Medium,6.7,Repair collection,Normal,09:00,17:00,10,Unassigned
+RET011,C311,13.21741,80.30918,Washing Machine,Extra Large,26.7,Customer Return,Urgent,09:00,17:00,10,Unassigned
+RET012,C312,13.18942,80.27439,Smartphone,Small,0.3,Customer Return,Urgent,09:00,17:00,10,Unassigned
+RET013,C313,13.16246,80.26239,Television,Large,9.9,Repair collection,High,09:00,17:00,10,Unassigned
+RET014,C314,13.2241,80.24524,Television,Large,9.3,Replacement pickup,High,09:00,17:00,10,Unassigned
+RET015,C315,13.14935,80.25136,Monitor,Medium,3.3,Repair collection,Normal,09:00,17:00,10,Unassigned
+RET016,C316,13.21513,80.21669,Microwave,Medium,7.2,Repair collection,High,09:00,17:00,10,Unassigned
+RET017,C317,13.20583,80.17227,Microwave,Medium,5.7,Customer Return,High,09:00,17:00,10,Unassigned
+RET018,C318,13.17637,80.20576,Microwave,Medium,5.1,Warranty,High,09:00,17:00,10,Unassigned
+RET019,C319,13.11824,80.22864,Washing Machine,Extra Large,23.3,Warranty,High,09:00,17:00,10,Unassigned
+RET020,C320,13.14169,80.1884,Printer,Medium,5.9,Damaged item,Urgent,09:00,17:00,10,Unassigned
+RET021,C321,13.1076,80.23166,Washing Machine,Extra Large,23.1,Warranty,Normal,09:00,17:00,10,Unassigned
+RET022,C322,13.13336,80.16224,Microwave,Medium,5.3,Customer Return,Normal,09:00,17:00,10,Unassigned
+RET023,C323,13.1055,80.17493,Monitor,Medium,4.4,Replacement pickup,Urgent,09:00,17:00,10,Unassigned
+RET024,C324,13.08617,80.18978,Air Conditioner,Large,14.8,Repair collection,Normal,09:00,17:00,10,Unassigned
+RET025,C325,13.07957,80.12422,Monitor,Medium,4.1,Damaged item,Normal,09:00,17:00,10,Unassigned
+RET026,C326,13.07922,80.20808,Laptop,Small,1.2,Replacement pickup,Urgent,09:00,17:00,10,Unassigned
+RET027,C327,13.05311,80.16859,Smartphone,Small,0.4,Damaged item,Urgent,09:00,17:00,10,Unassigned
+RET028,C328,13.06269,80.20217,Microwave,Medium,7.4,Repair collection,Normal,09:00,17:00,10,Unassigned
+RET029,C329,13.02903,80.16682,Refrigerator,Extra Large,480.0,Damaged item,Urgent,09:00,17:00,10,Unassigned
+RET030,C330,12.98061,80.13505,Television,Large,25.0,Warranty,High,08:00,08:15,10,Unassigned
+RET031,C331,13.04885,80.23823,Printer,Medium,5.4,Repair collection,High,09:00,17:00,10,Unassigned
+RET032,C332,13.00369,80.20191,Microwave,Medium,7.1,Damaged item,Urgent,09:00,17:00,10,Unassigned
+RET033,C333,12.98031,80.20214,Air Conditioner,Large,18.0,Repair collection,High,09:00,17:00,10,Unassigned
+RET034,C334,13.0233,80.23459,Smartphone,Small,0.7,Damaged item,Normal,09:00,17:00,10,Unassigned
+RET035,C335,13.0235,80.25443,Refrigerator,Extra Large,29.9,Damaged item,Normal,09:00,17:00,10,Unassigned
+RET036,C336,12.98423,80.26167,Washing Machine,Extra Large,29.8,Replacement pickup,High,09:00,17:00,10,Unassigned
+RET037,C337,13.00066,80.26385,Laptop,Small,1.9,Damaged item,Urgent,09:00,17:00,10,Unassigned
+RET038,C338,13.00552,80.27878,Air Conditioner,Large,18.6,Repair collection,Normal,09:00,17:00,10,Unassigned
+RET039,C339,13.00263,80.28561,Television,Large,8.1,Replacement pickup,Normal,09:00,17:00,10,Unassigned
+RET040,C340,12.97521,80.31044,Air Conditioner,Large,12.9,Repair collection,High,09:00,17:00,10,Unassigned
+RET041,C341,12.98623,80.32031,Washing Machine,Extra Large,28.2,Customer Return,High,09:00,17:00,10,Unassigned
+RET042,C342,12.94027,80.36553,Washing Machine,Extra Large,29.1,Replacement pickup,Normal,09:00,17:00,10,Unassigned
+RET043,C343,12.97779,80.3439,Monitor,Medium,4.3,Damaged item,Normal,09:00,17:00,10,Unassigned
+RET044,C344,13.04921,80.30809,Laptop,Small,1.5,Warranty,Normal,09:00,17:00,10,Unassigned
+RET045,C345,13.00077,80.3864,Refrigerator,Extra Large,30.3,Replacement pickup,Urgent,09:00,17:00,10,Unassigned
+RET046,C346,13.05455,80.33781,Refrigerator,Extra Large,26.1,Customer Return,Normal,09:00,17:00,10,Unassigned
+RET047,C347,13.05998,80.345,Air Conditioner,Large,15.0,Repair collection,High,09:00,17:00,10,Unassigned
+RET048,C348,13.0684,80.34817,Microwave,Medium,7.5,Repair collection,Urgent,09:00,17:00,10,Unassigned
+RET049,C349,13.07742,80.37364,Washing Machine,Extra Large,25.1,Repair collection,Urgent,09:00,17:00,10,Unassigned
+RET050,C350,13.08196,80.35531,Monitor,Medium,5.0,Customer Return,Urgent,09:00,17:00,10,Unassigned

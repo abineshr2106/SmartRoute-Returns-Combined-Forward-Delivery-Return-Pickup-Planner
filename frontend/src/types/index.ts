@@ -1,3 +1,19 @@
+export interface WorkloadConfig {
+  max_stops?: number;
+  normal_threshold_pct?: number;
+  elevated_threshold_pct?: number;
+}
+
+export interface ObjectiveWeights {
+  alpha_km?: number;
+  beta_workload?: number;
+}
+
+export interface OptimizationRequest {
+  workload_config?: WorkloadConfig;
+  objective_weights?: ObjectiveWeights;
+}
+
 export interface DeliveryItem {
   delivery_id: string;
   route_id: string;
@@ -72,6 +88,7 @@ export interface RouteDetail {
   route_id: string;
   vehicle_id: string;
   driver_id: string;
+  working_hours: number;
   deliveries_count: number;
   returns_count: number;
   original_distance_km: number;
@@ -110,6 +127,7 @@ export interface OptimizationSummary {
   workload_risk_count: number;
   status: string;
   error_analysis: ErrorReason[];
+  disruption_scenario?: string;
 }
 
 export interface ExperimentScenarioResult {

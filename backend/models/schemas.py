@@ -1,6 +1,27 @@
 from typing import List, Optional
 from pydantic import BaseModel
 
+class WorkloadConfig(BaseModel):
+    max_stops: int = 25
+    normal_threshold_pct: float = 80.0
+    elevated_threshold_pct: float = 95.0
+
+class ObjectiveWeights(BaseModel):
+    alpha_km: float = 1.0
+    beta_workload: float = 0.0
+
+class OverrideRequest(BaseModel):
+    return_id: str
+    route_id: str
+    reason: str
+    user_id: str
+
+class OptimizationRequest(BaseModel):
+    workload_config: Optional[WorkloadConfig] = None
+    objective_weights: Optional[ObjectiveWeights] = None
+    manual_overrides: Optional[List[OverrideRequest]] = None
+    disruption_scenario: Optional[str] = None
+
 class DeliveryItem(BaseModel):
     delivery_id: str
     route_id: str
@@ -67,6 +88,7 @@ class RouteDetail(BaseModel):
     route_id: str
     vehicle_id: str
     driver_id: str
+    working_hours: float
     deliveries_count: int
     returns_count: int
     original_distance_km: float
@@ -104,6 +126,7 @@ class OptimizationSummary(BaseModel):
     workload_risk_count: int
     status: str
     error_analysis: List[dict]
+    disruption_scenario: Optional[str] = None
 
 class ExperimentScenarioResult(BaseModel):
     scenario: str

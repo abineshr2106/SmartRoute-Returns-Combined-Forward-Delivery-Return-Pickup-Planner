@@ -11,6 +11,9 @@ interface DashboardPageProps {
   onRunPlanner: () => void;
   onRunBaseline: () => void;
   onLoadData: () => void;
+  disruptionScenario?: string;
+  setDisruptionScenario?: (scenario: string) => void;
+  datasetSummary?: any;
 }
 
 export const DashboardPage: React.FC<DashboardPageProps> = ({
@@ -20,6 +23,9 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
   onRunPlanner,
   onRunBaseline,
   onLoadData,
+  disruptionScenario,
+  setDisruptionScenario,
+  datasetSummary
 }) => {
   const summary = data?.summary;
 
@@ -47,7 +53,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
         <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <div>
             <div className="inline-flex items-center space-x-2 bg-sky-500/20 text-sky-300 text-xs font-bold px-3 py-1 rounded-full border border-sky-500/30 uppercase tracking-wide mb-2">
-              <Award className="w-3.5 h-3.5" /> Review 1 Core Objective
+              <Award className="w-3.5 h-3.5" /> Final Review Core Objective
             </div>
             <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
               Combined Forward Delivery & Return Pickup Planner
@@ -70,9 +76,9 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <KPICard
           title="Total Deliveries"
-          value={summary ? summary.total_deliveries : 200}
+          value={summary ? summary.total_deliveries : (datasetSummary?.deliveries_count || 200)}
           subtitle="Forward delivery orders"
-          badge="10 Vehicles"
+          badge={`${summary ? summary.total_vehicles : (datasetSummary?.vehicles_count || 10)} Vehicles`}
           badgeColor="sky"
           icon={Package}
           iconBgColor="bg-sky-100"
@@ -80,9 +86,9 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
         />
         <KPICard
           title="Total Returns"
-          value={summary ? summary.total_returns : 30}
+          value={summary ? summary.total_returns : (datasetSummary?.returns_count || 30)}
           subtitle="Customer & warranty pickups"
-          badge={summary ? `${summary.assigned_returns_count} Assigned` : '30 Pending'}
+          badge={summary ? `${summary.assigned_returns_count} Assigned` : `${datasetSummary?.returns_count || 30} Pending`}
           badgeColor="emerald"
           icon={RotateCcw}
           iconBgColor="bg-emerald-100"
@@ -110,6 +116,99 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
         />
       </div>
 
+      {/* Disruption Simulation Control */}
+      <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h2 className="text-base font-extrabold text-slate-900 uppercase tracking-wide flex items-center gap-2">
+            <AlertTriangle className="w-5 h-5 text-amber-500" /> Disruption Simulation Engine
+          </h2>
+          <p className="text-xs text-slate-500 mt-0.5">
+            Test the optimizer's resilience against sudden real-world logistics disruptions.
+          </p>
+        </div>
+        <div className="flex items-center gap-3">
+          <select 
+            value={disruptionScenario || ''}
+            onChange={(e) => setDisruptionScenario && setDisruptionScenario(e.target.value)}
+            className="bg-slate-50 border border-slate-300 text-slate-700 text-sm rounded-xl focus:ring-amber-500 focus:border-amber-500 block p-2 transition-all cursor-pointer font-medium"
+          >
+            <option value="">-- Normal Operations --</option>
+            <option value="Traffic Delay">Traffic Delay (+5m service time)</option>
+            <option value="Vehicle Capacity Loss">Vehicle Capacity Loss (-25% capacity)</option>
+            <option value="Vehicle Breakdown">Vehicle Breakdown (V01 Unavailable)</option>
+            <option value="Urgent Return Request">Urgent Return Request (Force Insert)</option>
+          </select>
+          <button
+            onClick={onRunPlanner}
+            className="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white text-sm font-bold rounded-xl shadow-md transition-all"
+          >
+            {disruptionScenario ? "Simulate" : "Reset Normal"}
+          </button>
+        </div>
+      </div>
+      {/* Disruption Results Panel */}
+      {summary?.disruption_scenario && (
+        <div className="bg-amber-50 rounded-2xl p-5 border border-amber-200 shadow-sm space-y-3 mt-4">
+          <h3 className="text-sm font-bold text-amber-900 uppercase tracking-wide flex items-center gap-2">
+            <AlertTriangle className="w-4 h-4 text-amber-600" /> Disruption Impact Report
+          </h3>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs">
+            <div className="bg-white p-3 rounded-lg border border-amber-100">
+              <span className="font-semibold text-slate-500 block">Scenario Evaluated</span>
+              <span className="font-bold text-amber-800">{summary.disruption_scenario}</span>
+            </div>
+            <div className="bg-white p-3 rounded-lg border border-amber-100">
+              <span className="font-semibold text-slate-500 block">Incremental KM Impact</span>
+              <span className="font-bold text-amber-800">{summary.combined_incremental_km} km</span>
+            </div>
+            <div className="bg-white p-3 rounded-lg border border-amber-100">
+              <span className="font-semibold text-slate-500 block">Unassigned Requests</span>
+              <span className="font-bold text-rose-600">{summary.unassigned_returns_count} Returns Dropped</span>
+            </div>
+            <div className="bg-white p-3 rounded-lg border border-amber-100">
+              <span className="font-semibold text-slate-500 block">Workload Risk Impact</span>
+              <span className="font-bold text-rose-600">{summary.workload_risk_count} Routes at Risk</span>
+            </div>
+          </div>
+          {summary.error_analysis && summary.error_analysis.length > 0 && (
+            <div className="bg-white p-3 rounded-lg border border-amber-100 text-xs mt-3">
+              <span className="font-semibold text-slate-500 block mb-1">Constraint Conflicts Triggered</span>
+              <ul className="list-disc list-inside text-rose-700 font-medium">
+                {summary.error_analysis.map((err, i) => (
+                  <li key={i}>{err.reason}: {err.count} occurrences</li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Forecasting Block */}
+      <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm mt-6">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h2 className="text-base font-extrabold text-slate-900 uppercase tracking-wide flex items-center gap-2">
+              <TrendingUp className="w-5 h-5 text-indigo-500" /> Lightweight Operational Forecasting
+            </h2>
+            <p className="text-xs text-slate-500 mt-1">
+              Short-term volume projection utilizing 7-Day Moving Average & Exponential Smoothing.
+            </p>
+          </div>
+          <button
+            onClick={async () => {
+              try {
+                const { fetchForecastApi } = await import('../services/api');
+                const res = await fetchForecastApi();
+                alert(`Forecast Next Day: ${res.forecast_next_day} Returns\nMA-7: ${res.ma_7}\nExp. Smoothing: ${res.exponential_smoothing}\nConfidence Interval: ${res.confidence_interval[0]} - ${res.confidence_interval[1]}`);
+              } catch(e) {}
+            }}
+            className="px-4 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold rounded-xl text-sm transition-colors"
+          >
+            Run Forecast Model
+          </button>
+        </div>
+      </div>
+
       {/* Primary KPI Comparison Banner */}
       {summary && (
         <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm space-y-4">
@@ -126,29 +225,56 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
             </span>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-center">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+            <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
+              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">Deliveries</span>
+              <span className="text-xl font-black text-slate-800 block mt-1">{summary.total_deliveries || 200}</span>
+            </div>
+            <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
+              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">Returns</span>
+              <span className="text-xl font-black text-slate-800 block mt-1">{summary.total_returns || 50}</span>
+            </div>
+            <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
+              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">Vehicles</span>
+              <span className="text-xl font-black text-slate-800 block mt-1">{summary.total_vehicles || 10}</span>
+            </div>
+            <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
+              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">Assignment Rate</span>
+              <span className="text-xl font-black text-emerald-700 block mt-1">
+                {Math.round(((summary.total_returns - summary.unassigned_returns_count) / summary.total_returns) * 100) || 100}%
+              </span>
+            </div>
+
             <div className="p-4 bg-slate-50 rounded-xl border border-slate-200">
               <span className="text-xs font-semibold text-slate-500 block">Baseline Return KM</span>
               <span className="text-2xl font-black text-slate-800 block mt-1">{summary.baseline_return_km} km</span>
-              <span className="text-[11px] text-slate-400">Separate collection</span>
             </div>
 
             <div className="p-4 bg-sky-50 rounded-xl border border-sky-200">
               <span className="text-xs font-semibold text-sky-700 block">Combined Incremental KM</span>
               <span className="text-2xl font-black text-sky-900 block mt-1">{summary.combined_incremental_km} km</span>
-              <span className="text-[11px] text-sky-600">Integrated pickup</span>
             </div>
 
             <div className="p-4 bg-emerald-50 rounded-xl border border-emerald-200">
               <span className="text-xs font-semibold text-emerald-700 block">Kilometres Saved</span>
               <span className="text-2xl font-black text-emerald-900 block mt-1">{summary.km_saved} km</span>
-              <span className="text-[11px] text-emerald-600">Direct reduction</span>
             </div>
 
-            <div className="p-4 bg-gradient-to-br from-emerald-600 to-teal-700 text-white rounded-xl shadow-md">
-              <span className="text-xs font-medium opacity-90 block">Percentage Improvement</span>
-              <span className="text-3xl font-black block mt-0.5">{summary.percentage_improvement}%</span>
-              <span className="text-[11px] opacity-80">Primary KPI Target</span>
+            <div className="p-4 bg-amber-50 rounded-xl border border-amber-200">
+              <span className="text-xs font-semibold text-amber-700 block">Workload Risk</span>
+              <span className="text-2xl font-black text-amber-900 block mt-1">{summary.workload_risk_count} Routes</span>
+            </div>
+          </div>
+
+          <div className="bg-blue-50 p-4 rounded-xl border border-blue-100 text-xs text-blue-900 mt-4 space-y-2">
+            <p><strong>Methodology:</strong></p>
+            <ul className="list-disc list-inside space-y-1 ml-2">
+              <li><strong>Baseline:</strong> The distance required if a separate, dedicated fleet was dispatched solely to collect the returns.</li>
+              <li><strong>Combined:</strong> The additional incremental distance created by inserting return pickups into the existing forward delivery routes.</li>
+              <li><strong>Primary KPI (Incremental KM):</strong> We seek to minimize the combined incremental KM.</li>
+            </ul>
+            <div className="bg-blue-100 p-2 rounded mt-2 text-[11px]">
+              <strong>Note on Percentage Improvement:</strong> The {summary.percentage_improvement}% improvement represents the reduction in strictly return-associated travel. It does NOT imply the entire forward delivery network was reduced by this amount.
             </div>
           </div>
         </div>
@@ -251,6 +377,80 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
                 </BarChart>
               </ResponsiveContainer>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Workload Analysis Section */}
+      {data && data.routes.length > 0 && (
+        <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm mt-6 space-y-4">
+          <div className="flex flex-col md:flex-row justify-between md:items-start gap-4">
+            <div>
+              <h2 className="text-base font-extrabold text-slate-900 uppercase tracking-wide flex items-center gap-2">
+                <CheckCircle className="w-5 h-5 text-indigo-600" /> Workload Analysis
+              </h2>
+              <p className="text-xs text-slate-500 mt-1">Detailed breakdown of driver shifts and stop counts.</p>
+            </div>
+            
+            <div className="bg-indigo-50 border border-indigo-100 rounded-xl p-3 text-xs text-indigo-900 max-w-md">
+              <h4 className="font-bold flex items-center gap-1.5 mb-1"><AlertTriangle className="w-4 h-4 text-indigo-600"/> Worker Protection</h4>
+              <p>The planner evaluates route workload using stop counts and estimated shift duration. Routes exceeding configured workload thresholds are flagged for dispatcher review rather than silently transferring additional work to frontline drivers.</p>
+              <div className="mt-2 bg-white/50 p-1.5 rounded font-mono text-[10px] border border-indigo-100/50">
+                Formula: Estimated Shift Hours = Driving Hours + Service Hours
+              </div>
+            </div>
+          </div>
+
+          <div className="overflow-x-auto border border-slate-200 rounded-xl shadow-sm">
+            <table className="w-full text-left text-xs whitespace-nowrap">
+              <thead className="bg-slate-50 text-slate-600 font-semibold uppercase border-b border-slate-200">
+                <tr>
+                  <th className="py-2.5 px-3">Route ID</th>
+                  <th className="py-2.5 px-3">Vehicle</th>
+                  <th className="py-2.5 px-3">Driver ID</th>
+                  <th className="py-2.5 px-3">Deliv. / Ret.</th>
+                  <th className="py-2.5 px-3">Total Stops (Max 25)</th>
+                  <th className="py-2.5 px-3">Driving / Service Hrs</th>
+                  <th className="py-2.5 px-3 font-bold text-slate-800">Est. Shift Hrs</th>
+                  <th className="py-2.5 px-3 text-slate-500">Max Shift Hrs</th>
+                  <th className="py-2.5 px-3">Workload Status</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-200 bg-white">
+                {data.routes.map(r => {
+                  const serviceHrs = r.stops.reduce((acc, s) => acc + (s.service_time_minutes / 60), 0);
+                  const drivingHrs = Math.max(0, r.total_duration_hours - serviceHrs);
+                  
+                  return (
+                    <tr key={r.route_id} className="hover:bg-slate-50 transition-colors">
+                      <td className="py-2.5 px-3 font-bold text-slate-800">{r.route_id}</td>
+                      <td className="py-2.5 px-3 font-medium text-slate-600">{r.vehicle_id}</td>
+                      <td className="py-2.5 px-3 text-slate-500">{r.driver_id}</td>
+                      <td className="py-2.5 px-3">{r.deliveries_count} / {r.returns_count}</td>
+                      <td className="py-2.5 px-3 font-semibold text-slate-700">
+                        {r.deliveries_count + r.returns_count}
+                      </td>
+                      <td className="py-2.5 px-3 text-slate-500">
+                        {drivingHrs.toFixed(1)}h / {serviceHrs.toFixed(1)}h
+                      </td>
+                      <td className="py-2.5 px-3 font-bold text-slate-800">
+                        {r.total_duration_hours.toFixed(1)}h
+                      </td>
+                      <td className="py-2.5 px-3 text-slate-500">{r.working_hours.toFixed(1)}h</td>
+                      <td className="py-2.5 px-3">
+                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase border ${
+                          r.workload_status === 'Risk' ? 'bg-rose-50 text-rose-700 border-rose-200' :
+                          r.workload_status === 'Elevated' ? 'bg-amber-50 text-amber-700 border-amber-200' :
+                          'bg-emerald-50 text-emerald-700 border-emerald-200'
+                        }`}>
+                          {r.workload_status}
+                        </span>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
           </div>
         </div>
       )}

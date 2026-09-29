@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { ReturnItem } from '../types';
 import { Package, Clock, ShieldCheck, MapPin, AlertCircle, CheckCircle2, X } from 'lucide-react';
 
@@ -8,6 +8,13 @@ interface ReturnDetailModalProps {
 }
 
 export const ReturnDetailModal: React.FC<ReturnDetailModalProps> = ({ returnItem, onClose }) => {
+  useEffect(() => {
+    if (returnItem) {
+      document.body.style.overflow = 'hidden';
+      return () => { document.body.style.overflow = 'unset'; };
+    }
+  }, [returnItem]);
+
   if (!returnItem) return null;
 
   return (

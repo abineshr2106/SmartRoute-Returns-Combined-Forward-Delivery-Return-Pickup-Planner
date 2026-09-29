@@ -137,13 +137,13 @@ def generate_returns():
     item_keys = list(ITEM_CATALOG.keys())
     return_types = ["Warranty", "Customer Return", "Damaged item", "Replacement pickup", "Repair collection"]
     
-    # 30 return requests spread across the city
-    for i in range(1, 31):
+    # 50 return requests spread across the city
+    for i in range(1, 51):
         ret_id = f"RET{i:03d}"
         cust_id = f"C{300 + i}"
         
         # Angle across 360 degrees
-        angle = (i / 30.0) * 2 * np.pi + random.uniform(-0.1, 0.1)
+        angle = (i / 50.0) * 2 * np.pi + random.uniform(-0.1, 0.1)
         dist_km = random.uniform(4.0, 20.0)
         
         lat = DEPOT_LAT + (dist_km / 111.0) * np.sin(angle)

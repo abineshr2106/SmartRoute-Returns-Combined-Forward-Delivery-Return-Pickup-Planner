@@ -15,6 +15,8 @@ def run_performance_experiments(deliveries: List[Dict], returns: List[Dict], veh
         {"name": "Scenario A (10 Returns)", "count": 10},
         {"name": "Scenario B (20 Returns)", "count": 20},
         {"name": "Scenario C (30 Returns)", "count": 30},
+        {"name": "Scenario D (40 Returns)", "count": 40},
+        {"name": "Scenario E (50 Returns)", "count": 50},
     ]
     
     results = []
