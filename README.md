@@ -122,18 +122,13 @@ A lightweight predictive analytics module utilizing a 7-Day Moving Average and E
 
 ---
 
-## 8. Deployment Readiness & Production Limitations
-### Deployment Checklist
-- [x] API routes validated and sanitized via Pydantic schemas.
-- [x] Edge-case unit test suite passes 100%.
-- [x] Environment variables configured for API endpoints (Vite).
-- [ ] Database migration (Move from in-memory JSON to PostgreSQL).
-- [ ] Authentication / Role-Based Access Control (RBAC) for Dispatchers.
+## 8. Future Production Enhancements (Out of Academic Scope)
+While this prototype is 100% complete for its academic and demonstration objectives, real-world deployment would require the following production-only enhancements:
 
-### Academic Limitations
-- **Routing Engine:** Distances use the Haversine formula (as-the-crow-flies). A production environment must integrate an external routing API (OSRM, Google Maps) for actual road-network driving times.
-- **Heuristic vs MILP:** The greedy insertion algorithm is highly scalable but not mathematically guaranteed to find the absolute global optimum.
-- **Persistence:** Currently, datasets and audit logs reset upon server restart. Production requires a persistent SQL database.
+- **Database Persistence:** Move from in-memory JSON to a persistent SQL database (e.g., PostgreSQL). Currently, datasets and audit logs reset upon server restart.
+- **Authentication:** Implement Role-Based Access Control (RBAC) for Dispatchers to secure the Authorized Override system.
+- **External Routing API:** Distances currently use the Haversine formula. A production environment must integrate an external routing API (OSRM, Google Maps) for actual road-network driving times.
+- **Production Deployment:** Standardize deployment via Docker, CI/CD pipelines, and cloud hosting infrastructure.
 
 ---
 

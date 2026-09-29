@@ -43,9 +43,6 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <span className="bg-sky-500/20 text-sky-400 text-xs font-semibold px-2 py-0.5 rounded border border-sky-500/30 uppercase tracking-wide">
                   RETURNS
                 </span>
-                <span className="invisible text-xs font-medium px-2 py-0.5 rounded border border-transparent">
-                  Final Review | 100% Complete
-                </span>
               </div>
               <p className="text-xs text-slate-400 font-normal">
                 Combined Forward Delivery + Return Pickup Planner

@@ -56,7 +56,7 @@ export const BenchmarkPage: React.FC<BenchmarkPageProps> = ({ data }) => {
             <Award className="w-6 h-6 text-amber-500" /> Benchmark & Performance Experiments
           </h1>
           <p className="text-xs text-slate-500 mt-0.5">
-            Final Review quantitative benchmarking, scenario scaling experiments, error analysis, and CSV export.
+            Quantitative benchmarking, scenario scaling experiments, error analysis, and CSV export.
           </p>
         </div>
 
@@ -368,7 +368,7 @@ export const BenchmarkPage: React.FC<BenchmarkPageProps> = ({ data }) => {
           <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 text-xs text-slate-600 space-y-2">
             <span className="font-bold text-slate-900 block">Academic Error Diagnostics:</span>
             <p>
-              When a return pickup is blocked, the engine preserves vehicle capacity constraints and time-window guarantees. Rather than forcing an illegal assignment, unassigned returns are clearly categorized for separate dispatch or Review 2 multi-objective resolution.
+              When a return pickup is blocked, the engine preserves vehicle capacity constraints and time-window guarantees. Rather than forcing an illegal assignment, unassigned returns are clearly categorized for separate dispatch.
             </p>
           </div>
         </div>

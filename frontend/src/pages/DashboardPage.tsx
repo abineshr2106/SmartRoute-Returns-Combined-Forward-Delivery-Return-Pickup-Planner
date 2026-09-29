@@ -53,7 +53,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
         <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <div>
             <div className="inline-flex items-center space-x-2 bg-sky-500/20 text-sky-300 text-xs font-bold px-3 py-1 rounded-full border border-sky-500/30 uppercase tracking-wide mb-2">
-              <Award className="w-3.5 h-3.5" /> Final Review Core Objective
+              <Award className="w-3.5 h-3.5" /> Logistics Core Objective
             </div>
             <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
               Combined Forward Delivery & Return Pickup Planner

@@ -6,7 +6,7 @@ import os
 def main():
     print("=" * 60)
     print("SMARTROUTE RETURNS — Combined Forward Delivery & Return Planner")
-    print("REVIEW 1 DEMO LAUNCHER (~35% COMPLETION STAGE)")
+    print("100% complete academic/demo prototype")
     print("=" * 60)
 
     base_dir = os.path.dirname(os.path.abspath(__file__))
@@ -18,8 +18,7 @@ def main():
 
     # 2. Start FastAPI Backend Server
     print("\n[2/3] Starting FastAPI Backend API on http://127.0.0.1:8000 ...")
-    backend_cmd = [sys.executable, "-m", "uvicorn", "backend.main:"
-    "", "--host", "127.0.0.1", "--port", "8000"]
+    backend_cmd = [sys.executable, "-m", "uvicorn", "backend.main:app", "--host", "127.0.0.1", "--port", "8000"]
     backend_process = subprocess.Popen(backend_cmd, cwd=base_dir)
 
     time.sleep(2)

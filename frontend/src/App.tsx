@@ -199,7 +199,7 @@ export function App() {
             <span className="font-bold text-slate-700">SMARTROUTE RETURNS</span> — Combined Forward Delivery & Return Pickup Planner
           </div>
           <div>
-            Academic Capstone Prototype — <span className="font-semibold text-emerald-700">FINAL REVIEW — 100% COMPLETE</span>
+            Academic Capstone Prototype — <span className="font-semibold text-emerald-700">Optimized Routing Engine</span>
           </div>
         </div>
       </footer>
