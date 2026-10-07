@@ -34,6 +34,10 @@ def run_performance_experiments(deliveries: List[Dict], returns: List[Dict], veh
         
         elapsed_ms = round((time.time() - start_time) * 1000.0, 2)
         
+        # Benchmark Calculations
+        # Evaluates the efficiency of combined vs separate return routing.
+        # baseline_ret_km: Distance if a separate fleet was dispatched just for returns.
+        # comb_inc_km: Additional distance added to the delivery fleet to pick up returns.
         baseline_ret_km = base_res["separate_return_km"]
         comb_inc_km = sum(r["incremental_km"] for r in fmt_routes)
         km_saved = round(max(0.0, baseline_ret_km - comb_inc_km), 2)

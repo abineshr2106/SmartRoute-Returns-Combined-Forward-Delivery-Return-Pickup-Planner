@@ -200,19 +200,22 @@ def run_combined_optimization(
             volume_limit = float(veh.get("volume_capacity_m3", 10.0))
             working_hrs = float(veh.get("working_hours", 8.0))
             
-            # 1. Weight capacity check
+            # 1. Capacity Calculations (Weight)
+            # Evaluates if adding this return to the existing vehicle load exceeds its kg limit
             current_weight = sum(s["item_weight_kg"] for s in stops)
             if current_weight + r_weight > weight_limit:
                 capacity_blocked = True
                 continue
                 
-            # 2. Volume capacity check
+            # 2. Capacity Calculations (Volume)
+            # Evaluates if adding this return to the existing vehicle load exceeds its m3 limit
             current_volume = sum(s["item_volume_m3"] for s in stops)
             if current_volume + r_volume > volume_limit:
                 capacity_blocked = True
                 continue
                 
-            # Test every insertion index (from index 0 up to len(stops))
+            # Return-Pickup Integration
+            # Construct a standardized RETURN stop to be tested at every possible sequence index of the forward route
             ret_stop = {
                 "stop_id": ret_copy["return_id"],
                 "stop_type": "RETURN",
@@ -233,13 +236,15 @@ def run_combined_optimization(
             for idx in range(len(stops) + 1):
                 candidate_stops = stops[:idx] + [ret_stop] + stops[idx:]
                 
-                # Check time windows for updated sequence
+                # 3. Time Window Validation
+                # Simulates the route timeline from 08:00 AM. Arrival at any stop must be <= time_window_end.
                 tw_feasible, _ = check_time_windows(candidate_stops)
                 if not tw_feasible:
                     time_window_blocked = True
                     continue
                     
-                # Calculate incremental distance for candidate route
+                # 4. Incremental KM Calculation (Greedy Insertion Cost)
+                # Calculates the exact spatial delta added by inserting this return stop between existing route nodes.
                 cand_coords = [(DEPOT_LAT, DEPOT_LNG)] + [(s["latitude"], s["longitude"]) for s in candidate_stops] + [(DEPOT_LAT, DEPOT_LNG)]
                 cand_dist = calculate_route_distance(cand_coords)
                 
@@ -248,7 +253,8 @@ def run_combined_optimization(
                 
                 incremental = cand_dist - curr_dist
                 
-                # Calculate workload for candidate
+                # 5. Workload Constraints Calculation
+                # Ensures vehicle limits (e.g., 8-hour shift max) are respected before accepting assignment
                 cand_travel_mins = travel_time_minutes(cand_dist)
                 cand_service_mins = sum(s.get("service_time_minutes", 10) for s in candidate_stops)
                 cand_duration_hrs = (cand_travel_mins + cand_service_mins) / 60.0
@@ -265,7 +271,8 @@ def run_combined_optimization(
                 if cand_duration_hrs > working_hrs:
                     penalty += 10.0 # Huge penalty to strictly avoid exceeding max shift hours
                     
-                # Calculate weighted objective cost
+                # 6. Combined Route Calculation (Multi-Objective Cost Function)
+                # Evaluates trade-off between driving distance (alpha) and driver workload (beta)
                 cost = (alpha * norm_km) + (beta * norm_workload) + penalty
                 
                 if cost < best_cost:
